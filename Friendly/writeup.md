@@ -58,6 +58,6 @@ After the scan we found two ports open the 21/TCP and the 80/TCP , we will be us
 
 
 
-**Vulnerabilities**
+ **Vulnerabilities**
 
 
