@@ -1,4 +1,4 @@
-# Friendly1 — TryHackMe Writeup
+# Friendly1 — HackmyVm Writeup
 
 Welcome to the **Friendly1** writeup! In this machine we cover the full hacking cycle:
 
