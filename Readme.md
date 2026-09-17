@@ -6,5 +6,5 @@ This repository contains the machines I have completed while practicing cybersec
 
 ## Machines
 - Friendly
-- Machine 02
+- Friendly2
 - Machine 03
