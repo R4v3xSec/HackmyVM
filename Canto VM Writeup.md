@@ -150,4 +150,78 @@ _______________________________________________________________
 [+] Command Line: wpscan --url http://192.168.15.16/ -U erik -P /usr/share/wordlists/rockyou.txt
 [+] Hostname: kali
 
+This took too much time so instead we will try with pugglins
+
+I confirm that the path exists 
+
+<img width="986" height="346" alt="image" src="https://github.com/user-attachments/assets/54f17ec9-6b9d-4548-8658-7c23d3a8d6ff" />
+
+We need to Download a wordlist for Wordpress from Github 
+
+We must go to https://github.com/Perfectdotexe/WordPress-Plugins-List/blob/master/plugins.txt
+
+Click on raw then use wget we download the file called wordlist.txt 
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ wget https://raw.githubusercontent.com/Perfectdotexe/WordPress-Plugins-List/refs/heads/master/plugins.txt
+--2026-10-08 10:43:54--  https://raw.githubusercontent.com/Perfectdotexe/WordPress-Plugins-List/refs/heads/master/plugins.txt
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.110.133, 185.199.109.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.110.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1607255 (1.5M) [text/plain]
+Saving to: ‘plugins.txt’
+
+plugins.txt                                                100%[========================================================================================================================================>]   1.53M  4.91MB/s    in 0.3s    
+
+2026-10-08 10:43:55 (4.91 MB/s) - ‘plugins.txt’ saved [1607255/1607255]
+
+
+Now we must run a gobuster to enumerate plugins inside our content/plugins website
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ gobuster dir -u 'http://192.168.15.16/wp-content/plugins/' -w plugins.txt 
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://192.168.15.16/wp-content/plugins/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                plugins.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+akismet              (Status: 301) [Size: 335] [--> http://192.168.15.16/wp-content/plugins/akismet/]
+canto                (Status: 301) [Size: 333] [--> http://192.168.15.16/wp-content/plugins/canto/]
+Progress: 80086 / 80086 (100.00%)
+===============================================================
+Finished
+===============================================================
+
+How do we know how many plugins does the repository have? 
+
+for this we must run wc -l plugins.txt 
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ wc -l plugins.txt                                                                                        
+80085 plugins.txt
+                     
+If we go t the website an add canto/readme.txt the website will provide a readme
+
+<img width="895" height="248" alt="image" src="https://github.com/user-attachments/assets/a105bd93-5b02-40c4-ad9c-fba815839873" />
+
+We found a table tag of 3.0.4, so we will need to search for an exploit 
+
+For this we want to download an exploit for WordPress Plugin Canto 3.0.5 
+
+We will be using:
+https://github.com/leoanggal1/CVE-2023-3452-PoC
+
+We complete a git clone 
+
+
+
 
