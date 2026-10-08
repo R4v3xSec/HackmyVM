@@ -8,3 +8,4 @@ This repository contains the machines I have completed while practicing cybersec
 - Friendly
 - Friendly2
 - Friendly3
+- Canto
