@@ -221,7 +221,35 @@ We will be using:
 https://github.com/leoanggal1/CVE-2023-3452-PoC
 
 We complete a git clone 
+after clonning our epository we will confim that we have ouur exploit in python format
+
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ ls
+CVE-2023-3452-PoC  plugins.txt  results.txt
+                                                                                                                                                                                                                                            
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ cd CVE-2023-3452-PoC 
+                                                                                                                                                                                                                                            
+┌──(r4v3x㉿kali)-[~/Desktop/Canto/CVE-2023-3452-PoC]
+└─$ ls
+assets  CVE-2023-3452.py  README.md
+
+Now let create our payload we hit on the PentestMonkey link 
+
+<img width="892" height="398" alt="image" src="https://github.com/user-attachments/assets/30cee072-4037-48d9-bc19-604ae8a7ce4b" />
+
+Then we click on the php-reverse-shell.php option 
+
+<img width="1003" height="672" alt="image" src="https://github.com/user-attachments/assets/58df3c26-014b-4a54-b6ac-d97b6af8f052" />
 
 
+Then we have to copy all the code and create a nano file
+
+<img width="1013" height="812" alt="image" src="https://github.com/user-attachments/assets/6df23091-16cd-423e-957b-a9fccad11702" />
 
 
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ nano Wordpress_virus.php
+
+
+                                  
