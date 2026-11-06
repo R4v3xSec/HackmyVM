@@ -312,7 +312,7 @@ $
  
 ## 4. Stabilizing the Shell
  
-To get a stable, fully interactive TTY, we run:
+To get a stable, fully interactive STTY, we run:
  
 ```
 script /dev/null -c bash
