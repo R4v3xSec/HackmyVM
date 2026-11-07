@@ -1,1 +1,123 @@
+— HackmyVm Writeup
 
+
+#1 Recconaisence 
+First we want to check the ip address that we will be working on with the arp'scan command 
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ sudo arp-scan -l | grep "PCS"   
+192.168.0.16    08:00:27:61:b3:53       PCS Systemtechnik GmbH
+
+once we have the IP address we want to confim if this has traffic 
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ ping 192.168.0.16 
+PING 192.168.0.16 (192.168.0.16) 56(84) bytes of data.
+64 bytes from 192.168.0.16: icmp_seq=1 ttl=64 time=1.01 ms
+64 bytes from 192.168.0.16: icmp_seq=2 ttl=64 time=1.20 ms
+64 bytes from 192.168.0.16: icmp_seq=3 ttl=64 time=1.59 ms
+^Z
+zsh: suspended  ping 192.168.0.16
+
+We needs to create a directory called Gift with mkdir 
+                                    
+Let´s save our IP address inside our Gift directory 
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ ip=192.168.0.16
+and we will save it in a file called Datos 
+
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ sudo arp-scan -l | grep "PCS" | awk '{print $1}' > Datos 
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ cat Datos     
+192.168.0.16
+
+Now it is time to run a NMAP command to check what we have 
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ sudo nmap -p- -sS -sC -sV --min-rate 5000 -n -Pn -vvv 192.168.0.16 -oN results.txt
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-11-06 17:25 -0500
+NSE: Loaded 158 scripts for scanning.
+NSE: Script Pre-scanning.
+NSE: Starting runlevel 1 (of 3) scan.
+Initiating NSE at 17:25
+Completed NSE at 17:25, 0.00s elapsed
+NSE: Starting runlevel 2 (of 3) scan.
+Initiating NSE at 17:25
+Completed NSE at 17:25, 0.00s elapsed
+NSE: Starting runlevel 3 (of 3) scan.
+Initiating NSE at 17:25
+Completed NSE at 17:25, 0.00s elapsed
+Initiating ARP Ping Scan at 17:25
+Scanning 192.168.0.16 [1 port]
+Completed ARP Ping Scan at 17:25, 0.08s elapsed (1 total hosts)
+Initiating SYN Stealth Scan at 17:25
+Scanning 192.168.0.16 [65535 ports]
+Discovered open port 22/tcp on 192.168.0.16
+Discovered open port 80/tcp on 192.168.0.16
+Increasing send delay for 192.168.0.16 from 0 to 5 due to 2676 out of 8918 dropped probes since last increase.
+Increasing send delay for 192.168.0.16 from 5 to 10 due to 1528 out of 5093 dropped probes since last increase.
+Increasing send delay for 192.168.0.16 from 10 to 20 due to 2020 out of 6733 dropped probes since last increase.
+Increasing send delay for 192.168.0.16 from 20 to 40 due to max_successful_tryno increase to 4
+Increasing send delay for 192.168.0.16 from 40 to 80 due to max_successful_tryno increase to 5
+Increasing send delay for 192.168.0.16 from 80 to 160 due to max_successful_tryno increase to 6
+Increasing send delay for 192.168.0.16 from 160 to 320 due to max_successful_tryno increase to 7
+Increasing send delay for 192.168.0.16 from 320 to 640 due to max_successful_tryno increase to 8
+Increasing send delay for 192.168.0.16 from 640 to 1000 due to max_successful_tryno increase to 9
+Completed SYN Stealth Scan at 17:28, 145.62s elapsed (65535 total ports)
+Initiating Service scan at 17:28
+Scanning 2 services on 192.168.0.16
+Completed Service scan at 17:28, 6.04s elapsed (2 services on 1 host)
+NSE: Script scanning 192.168.0.16.
+NSE: Starting runlevel 1 (of 3) scan.
+Initiating NSE at 17:28
+Completed NSE at 17:28, 0.36s elapsed
+NSE: Starting runlevel 2 (of 3) scan.
+Initiating NSE at 17:28
+Completed NSE at 17:28, 0.02s elapsed
+NSE: Starting runlevel 3 (of 3) scan.
+Initiating NSE at 17:28
+Completed NSE at 17:28, 0.00s elapsed
+Nmap scan report for 192.168.0.16
+Host is up, received arp-response (0.0023s latency).
+Scanned at 2026-11-06 17:25:56 EST for 152s
+Not shown: 65533 closed tcp ports (reset)
+PORT   STATE SERVICE REASON         VERSION
+22/tcp open  ssh     syn-ack ttl 64 OpenSSH 8.3 (protocol 2.0)
+| ssh-hostkey: 
+|   3072 2c:1b:36:27:e5:4c:52:7b:3e:10:94:41:39:ef:b2:95 (RSA)
+| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCwvhffyA9Z9cqVhVe0GuixD3HU4XTTTf1CQnN9PbBFckBHxypueBuI9N0WkAOvZLGKI9JkjxzxgQ5vIdzr83IoyrbUBw/nFLwRzsVhBM+JMUqSZ9OHMhg8qQpFIAcdNprgB40DgER+hMrU+yUAqwbNISQC/aE+DCdHNjNqFw6Pf2/+7bp8CbntJAxdh4DtHZAmneKy/2JGKzpJcDxU2L8B5pY9uvajkKVSDXVFe1bJZV9ZirBalgYGgke4sTz5kpIeT3CyEefJie6r7wloIH4CiWtyXDsYGMt5mD2UBCa4GDQaJO5U9F0qjYFa8YdVCOTWdyQvOlFOgqydvAl0LRf6tZKNqVOb/peNf9K8Ucrg4n+IevaGmivhyGXnwbuCuHN1QH/9dzbNbnZwXn2GYtwYdjBy6AmHRX9Jcsdorj4b/r+eCEPvFIm4ESc7qsn4ShtQr9R8fTgrWArJkfLKhr4KdwMZoifAbjrR/G/lj524dS20mbbVLdhjy/8rH/42dN0=
+|   256 93:c1:1e:32:24:0e:34:d9:02:0e:ff:c3:9c:59:9b:dd (ECDSA)
+| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEK4YVSVfGAFEwIJqSel1n33seZLyN+AgGU4rUu5Xrf2LnzQmntddLtLtc1Soqu6SpOi/A6vefQzI+a867uJ3Tw=
+|   256 81:ab:36:ec:b1:2b:5c:d2:86:55:12:0c:51:00:27:d7 (ED25519)
+|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID5tIogpq9Eky8MaFF10Cq48d+nTRmXk0OwWl8J8CNIq
+80/tcp open  http    syn-ack ttl 64 nginx
+| http-methods: 
+|_  Supported Methods: GET HEAD
+|_http-title: Site doesn't have a title (text/html).
+MAC Address: 08:00:27:61:B3:53 (Oracle VirtualBox virtual NIC)
+
+NSE: Script Post-scanning.
+NSE: Starting runlevel 1 (of 3) scan.
+Initiating NSE at 17:28
+Completed NSE at 17:28, 0.00s elapsed
+NSE: Starting runlevel 2 (of 3) scan.
+Initiating NSE at 17:28
+Completed NSE at 17:28, 0.00s elapsed
+NSE: Starting runlevel 3 (of 3) scan.
+Initiating NSE at 17:28
+Completed NSE at 17:28, 0.00s elapsed
+Read data files from: /usr/share/nmap
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 153.65 seconds
+           Raw packets sent: 377671 (16.618MB) | Rcvd: 65545 (2.622MB)
+
+
+We can access the website from the bowser to confirm if there is a website 
+But with Curl we can also access it 
+┌──(r4v3x㉿kali)-[~/Desktop/Gift]
+└─$ curl -s $ip
+
+Dont Overthink. Really, Its simple.
+        <!-- Trust me -->
+
+After trying with some fuzzing I did not get anything so in this case I will need to use brutteforce attacks 
+
+To complete this 
