@@ -9,3 +9,4 @@ This repository contains the machines I have completed while practicing cybersec
 - Friendly2
 - Friendly3
 - Canto
+- Gift
