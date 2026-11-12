@@ -8,6 +8,18 @@ Welcome to the **Canto** writeup! In this machine we cover the full hacking cycl
 - Privilege escalation
 ---
  
+## Summary
+ 
+The entry point on this machine is a vulnerable third-party WordPress plugin: **Canto v3.0.4**, affected by **CVE-2023-3452**, a **Local/Remote File Inclusion (LFI/RFI) vulnerability** (CWE-98). The plugin's `includes/lib/download.php` passes a user-controlled `wp_abspath` parameter straight into a file-include function without validating it, so pointing that parameter at an attacker-controlled web server lets a remote PHP file (a PentestMonkey reverse shell) be included and executed — turning the file-inclusion bug into **Remote Code Execution** and a shell as `www-data`.
+ 
+From there, lateral movement didn't rely on another exploit: it came down to **poor credential hygiene** — a plaintext password left behind in a backup file (`/var/wordpress/backups/12052024.txt`), which was reused to `su` into the `erik` account (CWE-256/CWE-312, plaintext storage of credentials).
+ 
+Finally, privilege escalation exploited a **misconfigured sudo rule** (CWE-250, execution with unnecessary privileges): `erik` had passwordless sudo rights over `/usr/bin/cpulimit`, a binary known to **GTFOBins** as abusable to spawn a root shell, which was enough to go from `erik` straight to `root`.
+ 
+In short: **a vulnerable plugin (LFI → RCE) for the initial foothold, a leaked plaintext password for lateral movement, and an overly permissive sudo rule for privilege escalation.**
+ 
+---
+ 
 ## 1. Reconnaissance
  
 First we need to check our own IP address and then the IP address of the target machine.
@@ -312,7 +324,7 @@ $
  
 ## 4. Stabilizing the Shell
  
-To get a stable, fully interactive STTY, we run:
+To get a stable, fully interactive TTY, we run:
  
 ```
 script /dev/null -c bash
@@ -459,4 +471,3 @@ root.txt  snap
 |------|----------|-------|
 | User | `/home/erik/user.txt` | `d41d8cd98f00b204e9800998ecf8427e` |
 | Root | `/root/root.txt` | `1b56eefaab2c896e57c874a635b24b49` |
- 
