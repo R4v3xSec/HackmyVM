@@ -87,6 +87,7 @@ Two open ports:
 - **22/TCP** — SSH (OpenSSH 8.4p1)
 - **80/TCP** — Apache 2.4.56, hosting a site titled *"Servicio de Mantenimiento de Ordenadores"*
 <img width="1516" alt="Website homepage" src="https://github.com/user-attachments/assets/033ed806-af26-4454-8662-db69e02e920a" />
+
 ### Step 4 — Directory brute-force with Wfuzz
  
 ```bash
@@ -114,6 +115,7 @@ Wfuzz found two directories: `tools` and `assets`. We'll start by browsing `/too
 Right-click → *View Page Source* to inspect the site's code.
  
 <img width="1189" alt="Page source inspection" src="https://github.com/user-attachments/assets/1d1d8c51-f32a-4c9f-b808-dcf5c490b98f" />
+
 We find something interesting: a parameter that includes `doc=` in the URL. Whenever a page loads content through a parameter like this, it's a strong candidate for a **Path Traversal / Local File Inclusion (LFI)** vulnerability.
  
 First, we confirm the page exists:
@@ -123,6 +125,7 @@ check_if_exist.php?doc=keyboard.html
 ```
  
 <img width="1383" alt="check_if_exist.php confirmed" src="https://github.com/user-attachments/assets/104da5e8-44a9-46c3-9ccd-ea72dfda60a9" />
+
 ### Step 2 — Exploit the Path Traversal
  
 We replace `keyboard.html` with a traversal payload to walk up the directory tree and read `/etc/passwd`:
@@ -132,6 +135,7 @@ check_if_exist.php?doc=../../../../../../etc/passwd
 ```
  
 <img width="1562" alt="/etc/passwd contents leaked" src="https://github.com/user-attachments/assets/d7862ba5-5334-4378-b339-da3362334158" />
+
 Using `Ctrl + U` to view the raw source makes the output easier to read. We spot a user called **`gh0st`**.
  
 Since we have local file inclusion, we can try to pull that user's SSH private key directly:
@@ -143,6 +147,7 @@ check_if_exist.php?doc=../home/gh0st/.ssh/id_rsa
 It works — we successfully leak the private key.
  
 <img width="718" alt="id_rsa leaked via LFI" src="https://github.com/user-attachments/assets/20adcd26-9f5b-472f-9e71-49b679135b52" />
+
 ### Step 3 — Crack the private key's passphrase
  
 Save the leaked key locally and fix its permissions:
@@ -268,6 +273,7 @@ nano grep
 ```
  
 <img width="907" alt="Malicious grep script" src="https://github.com/user-attachments/assets/3f4f1e8e-eabe-43cb-86c2-2ff515f30b9d" />
+
 Inside it, drop into a root shell (`bash -p` preserves privileges):
  
 ```bash
