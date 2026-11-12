@@ -12,6 +12,16 @@ Welcome to the **Gift** writeup! In this machine we cover the full hacking cycle
 - Direct root access via SSH
 ---
  
+## Summary
+ 
+This machine's only real clue is a short, oddly worded sentence on its web page ("Dont Overthink. Really, Its simple."). That text was itself the hint: instead of being a path to fuzz or a vulnerability to exploit, it was meant to be turned into a **custom wordlist**, built from the page's own wording with **CEWL**.
+ 
+The root cause here isn't a software flaw, but a **weak/guessable credential** (CWE-521 — Weak Password Requirements): the SSH service accepted a trivial password ("simple") directly for the `root` account, with no lockout or rate-limiting in place. That made it exploitable with a straightforward **SSH credential brute-force attack (dictionary attack)** using **Hydra**, feeding it the small, page-derived wordlist as both the username and password list.
+ 
+In short: **a weak root SSH password, discoverable from a hint baked into the website itself, allowed direct root access with no privilege escalation step at all.**
+ 
+---
+ 
 ## 1. Reconnaissance
  
 First we create a working directory for this machine:
